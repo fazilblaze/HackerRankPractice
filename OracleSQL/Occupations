@@ -1,0 +1,13 @@
+--Score:30|Diff:Medium
+
+SELECT doctor,professor,singer,actor FROM
+(SELECT NAME, OCCUPATION, ROW_NUMBER() OVER (PARTITION BY OCCUPATION ORDER BY NAME) AS R_N
+FROM OCCUPATIONS)
+PIVOT(
+    MIN(NAME)
+    FOR OCCUPATION IN(
+    'Doctor' AS doctor,
+    'Professor' AS professor,
+    'Singer' AS singer,
+    'Actor' AS actor))
+ORDER BY R_N;
