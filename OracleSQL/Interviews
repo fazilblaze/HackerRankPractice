@@ -1,0 +1,13 @@
+Score:50|Diff:Hard
+
+select id,hid,nam,sum(ts),sum(tas),sum(tv),sum(tuv)
+from
+(select cont.contest_id id,cont.hacker_id hid,cont.name nam,col.college_id cid,chal.challenge_id 
+chid
+from contests cont, colleges col, challenges chal
+where cont.contest_id=col.contest_id and chal.college_id=col.college_id)
+left join (select challenge_id,sum(total_views) tv,sum(total_unique_views) tuv from view_stats group by challenge_id) vs on vs.challenge_id=chid
+left join (select challenge_id,sum(total_submissions) ts,sum(total_accepted_submissions) tas from submission_stats group by challenge_id) ss on ss.challenge_id=chid
+group by id,hid,nam
+having sum(tv)>0 or sum(tuv)>0 or sum(ts)>0 or sum(tas)>0
+order by id;
