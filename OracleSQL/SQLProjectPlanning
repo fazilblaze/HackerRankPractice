@@ -1,0 +1,8 @@
+Score:40|Diff:Med
+--inspired solution
+
+select distinct min(start_date) over(partition by r_date) p_date,max(end_date) over(partition by r_date) q_date
+from
+(select start_date,end_date,start_date-(row_number() over(order by end_date)) r_date
+from projects)
+order by q_date-p_date,q_date;
