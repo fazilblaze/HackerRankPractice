@@ -1,0 +1,12 @@
+Score:40|Diff:Med
+
+select x,y from
+(select x,y from functions
+where (x,y)=any(select y,x from functions))
+where x<y
+union
+(select x,y from functions
+where x=y
+group by x,y
+having count(x)>1)
+order by x;
