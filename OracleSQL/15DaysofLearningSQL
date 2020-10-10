@@ -1,0 +1,77 @@
+
+
+
+select day,hid,chid from
+(select submission_date day, hacker_id hid, count(hacker_id) chid
+from submissions
+group by submission_date,hacker_id
+order by day, chid desc,hid)
+where (day,chid)=any
+(select day,max(chid) from (select submission_date day, hacker_id hid,
+count(hacker_id) chid from submissions group by submission_date,hacker_id)
+group by day);
+
+select submission_date,count(distinct hacker_id) from submissions
+group by submission_date;
+
+select day,(select count(distinct hacker_id) from submissions where submission_date=day),hid,(select name from hackers where hacker_id=hid) from
+(select submission_date day, hacker_id hid, count(hacker_id) chid
+from submissions
+group by submission_date,hacker_id
+order by day, chid desc,hid)
+where (day,chid)=any
+(select day,max(chid) from (select submission_date day, hacker_id hid,
+count(hacker_id) chid from submissions group by submission_date,hacker_id)
+group by day);
+
+
+select day,(select count(distinct hacker_id) from submissions where submission_date=day),hid,(select name from hackers where hacker_id=hid)
+from
+(select submission_date day,hacker_id hid,num,
+row_number() over (partition by submission_date order by submission_date) rn from (select distinct hacker_id,submission_date,count(hacker_id) over (partition by submission_date,hacker_id order by submission_date) num
+from submissions
+order by submission_date,num desc,hacker_id))
+where rn=1;
+
+
+select submission_date,count(hacker_id) from
+(select hacker_id,submission_date,rank() over(partition by hacker_id order by submission_date) rnk
+from submissions)
+where (submission_date-rnk)='2016-02-29'
+group by submission_date
+order by submission_date;
+
+
+select day2,count(hid2) from
+(select hid2,day2,rnk,diff-diff2 sol from
+(select hid2,day2,rnk,diff,min(diff) over (partition by 1) diff2 from
+(select hid2,day2,rnk,day2-rnk diff from
+(select distinct hacker_id hid2,submission_date day2,rank() over (partition by hacker_id order by submission_date) rnk
+from submissions
+order by hacker_id,submission_date))))
+where sol=0
+group by day2
+order by day2;
+
+
+--final itertartion got output successfully
+select B.day,A.unihid,B.hid,B.name from
+(select dayy,count(hidd) unihid from
+(select hidd,dayy,rn,diff,(diff-min(diff) over()) tdiff from
+(select hidd,dayy,rn,dayy-rn diff from
+(select hidd,dayy,row_number() over(partition by hidd order by dayy) rn from
+(select distinct hacker_id hidd,submission_date dayy
+from submissions
+group by hacker_id,submission_date
+order by hacker_id,submission_date))))
+where tdiff<1
+group by dayy) A,
+(select day,hid,(select name from hackers where hacker_id=hid) name
+from
+(select submission_date day,hacker_id hid,num,
+row_number() over (partition by submission_date order by submission_date) rn from (select distinct hacker_id,submission_date,count(hacker_id) over (partition by submission_date,hacker_id order by submission_date) num
+from submissions
+order by submission_date,num desc,hacker_id))
+where rn=1) B
+where A.dayy=B.day
+order by B.day;
